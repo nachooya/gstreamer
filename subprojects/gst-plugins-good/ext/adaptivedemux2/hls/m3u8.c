@@ -817,6 +817,8 @@ gst_hls_media_playlist_parse (gchar * data,
   GstHLSMediaPlaylist *self;
   gint val;
   GstClockTime duration, partial_duration;
+  GstClockTime cue_out = 0;
+  gboolean cue_in = FALSE;
   gchar *title, *end;
   gboolean discontinuity = FALSE;
   gchar *current_key = NULL;
@@ -886,6 +888,8 @@ gst_hls_media_playlist_parse (gchar * data,
         date_time = NULL;
         duration = 0;
         partial_duration = 0;
+        cue_out = 0;
+        cue_in = 0;
         g_free (title);
         title = NULL;
         discontinuity = FALSE;
@@ -1158,6 +1162,19 @@ gst_hls_media_playlist_parse (gchar * data,
         /* Increment the current MSN by the number
          * of segments that were removed */
         mediasequence += self->skipped_segments;
+      } else if (g_str_has_prefix (data_ext_x, "CUE-OUT-CONT")) { // #EXT-X-CUE-OUT-CONT:82.840/124.000
+        GST_DEBUG("Detected: #EXT-X-CUE-OUT-CONT - IGNORED");
+      } else if (g_str_has_prefix (data_ext_x, "CUE-OUT")) { // #EXT-X-CUE-OUT:124.000
+        GST_INFO("Detected:  #EXT-X-CUE-OUT:");
+        if (!time_from_double_in_string (data + strlen ("#EXT-X-CUE-OUT:"), &data, &cue_out)) {
+          GST_WARNING ("Can't read CUE-OUT duration");
+          goto next_line;
+        } else {
+          GST_INFO("Detected:  #EXT-X-CUE-OUT: with value: %lu", cue_out);
+        }
+      } else if (g_str_has_prefix (data_ext_x, "CUE-IN")) { // #EXT-X-CUE-IN
+        GST_INFO("Detected: #EXT-X-CUE-IN");
+        cue_in = TRUE;
       } else {
         GST_LOG ("Ignored line: %s", data);
       }

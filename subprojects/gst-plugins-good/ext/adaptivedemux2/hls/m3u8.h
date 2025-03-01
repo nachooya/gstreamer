@@ -242,6 +242,8 @@ struct _GstM3U8MediaSegment
   gchar *title;
   GstClockTimeDiff stream_time;	/* Computed stream time */
   GstClockTime duration;
+  GstClockTime cue_out;
+  gboolean cue_in;
   gchar *uri;
   gint64 sequence;		/* the sequence number of this segment */
   gint64 discont_sequence;	/* The Discontinuity Sequence Number of this segment */

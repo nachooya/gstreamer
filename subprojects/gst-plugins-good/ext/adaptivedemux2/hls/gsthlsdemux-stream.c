@@ -302,6 +302,52 @@ gst_hls_demux_stream_create_tracks (GstAdaptiveDemux2Stream * stream)
   stream->stream_type = hlsdemux_stream->rendition_type;
 }
 
+static GstFlowReturn
+gst_hls_demux_stream_handle_cue_signals (GstAdaptiveDemux2Stream * stream,
+  GstM3U8MediaSegment *current_segment) 
+{
+    GstHLSDemuxStream *hls_stream = GST_HLS_DEMUX_STREAM_CAST (stream);
+    GstHLSDemux *demux =
+      GST_HLS_DEMUX_CAST (GST_ADAPTIVE_DEMUX2_STREAM_CAST (hls_stream)->demux);
+
+    GstClockTimeDiff internal_stream_time = current_segment->stream_time - hls_stream->playlist_start_offset;
+
+    if (current_segment->cue_out != 0) {
+      GST_INFO("Sending cue out message");
+      GstHLSDemux *hlsdemux = GST_HLS_DEMUX_CAST (stream->demux);
+      GstMessage *message;
+      message = gst_message_new_custom (GST_MESSAGE_ELEMENT, GST_OBJECT (hlsdemux),
+                                        gst_structure_new ("cue-out",
+                                                            "stream-time", G_TYPE_INT64, internal_stream_time,
+                                                            "duration", G_TYPE_UINT64, current_segment->cue_out,
+                                                            "pts", G_TYPE_UINT64, stream->parse_segment.position,
+                                                            NULL));
+
+      // Post the message on the bus
+      if (!gst_element_post_message (GST_ELEMENT_CAST(hlsdemux), message)) {
+          GST_WARNING_OBJECT (stream, "Failed to post cue-out message");
+      }
+    }
+
+    if (current_segment->cue_in) {
+      GST_INFO("Sending cue in message");
+      GstHLSDemux *hlsdemux = GST_HLS_DEMUX_CAST (stream->demux);
+      GstMessage *message;
+      message = gst_message_new_custom (GST_MESSAGE_ELEMENT, GST_OBJECT (hlsdemux),
+                                        gst_structure_new ("cue-in",
+                                                           "stream-time", G_TYPE_INT64, internal_stream_time,
+                                                           "pts", G_TYPE_UINT64, stream->parse_segment.position,
+                                                           NULL));
+
+      // Post the message on the bus
+      if (!gst_element_post_message (GST_ELEMENT_CAST(hlsdemux), message)) {
+          GST_WARNING_OBJECT (stream, "Failed to post cue-in message");
+      }
+    }
+
+    return GST_FLOW_OK;
+}
+
 static gboolean
 gst_hls_demux_stream_start_fragment (GstAdaptiveDemux2Stream * stream)
 {
@@ -931,6 +977,8 @@ gst_hls_demux_stream_finish_fragment (GstAdaptiveDemux2Stream * stream)
     GST_DEBUG_OBJECT (stream, "Can't advance - current_segment is NULL");
     return GST_FLOW_OK;
   }
+
+  gst_hls_demux_stream_handle_cue_signals (stream, hls_stream->current_segment);
 
   if (ret == GST_FLOW_OK || ret == GST_FLOW_NOT_LINKED) {
     GstClockTime duration = hls_stream->current_segment->duration;
@@ -1602,6 +1650,9 @@ gst_hls_demux_stream_update_fragment_info (GstAdaptiveDemux2Stream * stream)
 
       if (gst_hls_media_playlist_get_starting_segment
           (hlsdemux_stream->playlist, &seek_result)) {
+
+        hlsdemux_stream->playlist_start_offset = seek_result.segment->stream_time;
+
         hlsdemux_stream->current_segment = seek_result.segment;
         hlsdemux_stream->in_partial_segments =
             seek_result.found_partial_segment;

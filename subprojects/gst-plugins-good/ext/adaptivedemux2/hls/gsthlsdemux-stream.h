@@ -153,6 +153,7 @@ struct _GstHLSDemuxStream
    * "output" stream times. Not enabled (i.e 0) if variant is ISOBMFF
    */
   GstClockTime presentation_offset;
+  GstClockTime playlist_start_offset;
 
   gboolean pdt_tag_sent;
 
