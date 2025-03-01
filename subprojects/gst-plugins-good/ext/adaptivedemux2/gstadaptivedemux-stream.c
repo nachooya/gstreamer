@@ -2610,7 +2610,8 @@ gst_adaptive_demux2_stream_handle_collection (GstAdaptiveDemux2Stream * stream,
    * (and possibly in the future by codec).
    */
   if (!can_handle_collection (stream, collection)) {
-    return FALSE;
+    GST_WARNING ("TCS-PATCH: Collection can't be handled because no tags. Ignoring it.");
+    //return FALSE;
   }
 
   /* Store the collection on the stream */
