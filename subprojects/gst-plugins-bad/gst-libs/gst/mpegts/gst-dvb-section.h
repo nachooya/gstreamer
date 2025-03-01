@@ -296,7 +296,7 @@ typedef struct _GstMpegtsSDT GstMpegtsSDT;
  * @EIT_present_following_flag: EIT present/following information is present in this transport stream
  * @running_status: Status of this service
  * @free_CA_mode: True if one or more streams is controlled by a CA system
- * @descriptors: (element-type GstMpegtsDescriptor): List of descriptors
+ * @descriptors: (element-type GstMpegtsDescriptor) (transfer container): List of descriptors
  *
  */
 struct _GstMpegtsSDTService
@@ -346,7 +346,13 @@ GST_MPEGTS_API
 GstMpegtsSDT *gst_mpegts_sdt_new (void);
 
 GST_MPEGTS_API
+void gst_mpegts_sdt_add_service (GstMpegtsSDT *sdt, GstMpegtsSDTService* service);
+
+GST_MPEGTS_API
 GstMpegtsSDTService *gst_mpegts_sdt_service_new (void);
+
+GST_MPEGTS_API
+void gst_mpegts_sdt_service_add_descriptor (GstMpegtsSDTService *service, GstMpegtsDescriptor* descriptor);
 
 /* EIT */
 

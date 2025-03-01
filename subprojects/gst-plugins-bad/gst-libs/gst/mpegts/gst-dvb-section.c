@@ -1011,6 +1011,20 @@ gst_mpegts_sdt_new (void)
 }
 
 /**
+ * gst_mpegts_sdt_add_service:
+ * @service: (in): the SDT to add the service to
+ * @descriptor: (transfer none): a service to add to the sdt
+ *
+ * Adds a descriptor to the service. The function takes ownership of @descriptor,
+ * and it will be freed when the service is destroyed or the descriptor is removed.
+ */
+void 
+gst_mpegts_sdt_add_service (GstMpegtsSDT *sdt, GstMpegtsSDTService* service)
+{
+     g_ptr_array_add (sdt->services, _gst_mpegts_sdt_service_copy(service));
+}
+
+/**
  * gst_mpegts_sdt_service_new:
  *
  * Allocates and initializes a #GstMpegtsSDTService.
@@ -1028,6 +1042,20 @@ gst_mpegts_sdt_service_new (void)
       gst_mpegts_descriptor_free);
 
   return service;
+}
+
+/**
+ * gst_mpegts_sdt_service_add_descriptor:
+ * @service: (in): the SDT service to add the descriptor to
+ * @descriptor: (transfer full): a descriptor to add to the service
+ *
+ * Adds a descriptor to the service. The function takes ownership of @descriptor,
+ * and it will be freed when the service is destroyed or the descriptor is removed.
+ */
+void 
+gst_mpegts_sdt_service_add_descriptor (GstMpegtsSDTService *service, GstMpegtsDescriptor* descriptor)
+{
+    g_ptr_array_add (service->descriptors, descriptor);
 }
 
 static gboolean
