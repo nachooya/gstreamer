@@ -880,27 +880,27 @@ gst_hls_media_playlist_parse (gchar * data,
       data = uri_join (self->base_uri ? self->base_uri : self->uri, data);
 
       /* Let's check this is not a bogus duplicate entry */
-      if (previous && !discontinuity && !g_strcmp0 (data, previous->uri)
-          && (offset == -1 || previous->offset == offset)) {
-        GST_WARNING ("Dropping duplicate segment entry");
-        g_free (data);
-        data = NULL;
-        date_time = NULL;
-        duration = 0;
-        partial_duration = 0;
-        cue_out = 0;
-        cue_in = 0;
-        g_free (title);
-        title = NULL;
-        discontinuity = FALSE;
-        size = offset = -1;
-        is_gap = FALSE;
-        if (partial_segments != NULL) {
-          g_ptr_array_free (partial_segments, TRUE);
-          partial_segments = NULL;
-        }
-        goto next_line;
-      }
+      // if (previous && !discontinuity && !g_strcmp0 (data, previous->uri)
+      //     && (offset == -1 || previous->offset == offset)) {
+      //   GST_WARNING ("Dropping duplicate segment entry");
+      //   g_free (data);
+      //   data = NULL;
+      //   date_time = NULL;
+      //   duration = 0;
+      //   partial_duration = 0;
+      //   cue_out = 0;
+      //   cue_in = 0;
+      //   g_free (title);
+      //   title = NULL;
+      //   discontinuity = FALSE;
+      //   size = offset = -1;
+      //   is_gap = FALSE;
+      //   if (partial_segments != NULL) {
+      //     g_ptr_array_free (partial_segments, TRUE);
+      //     partial_segments = NULL;
+      //   }
+      //   goto next_line;
+      // }
       if (data != NULL) {
         GstM3U8MediaSegment *file;
         /* We can finally create the segment */
