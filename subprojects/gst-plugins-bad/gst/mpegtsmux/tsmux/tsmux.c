@@ -1064,6 +1064,14 @@ tsmux_write_adaptation_field (guint8 * buf,
       buf[pos++] = 1;
       buf[pos++] = 0x1f;        /* lower 5 bits are reserved, and should be all 1 */
     }
+  } else {
+    /* Adaptation only to be used for stuffing */
+    if (G_UNLIKELY (min_length == 1)) {
+      /* Single stuffing byte needed, set zero length */
+      buf[0] = 0;
+      pos = 1;
+      goto out;
+    }
   }
   /* Write the flags at the start */
   buf[1] = flags;
@@ -1075,6 +1083,7 @@ tsmux_write_adaptation_field (guint8 * buf,
   /* Write the adaptation field length, which doesn't include its own byte */
   buf[0] = pos - 1;
 
+out:
   if (written)
     *written = pos;
 
@@ -1105,7 +1114,7 @@ tsmux_write_ts_header (TsMux * mux, guint8 * buf, TsMuxPacketInfo * pi,
    * 13 bits: PID
    */
   tmp = buf + 1;
-  if (pi->packet_start_unit_indicator) {
+  if (pi->packet_start_unit_indicator && payload_len_out != NULL) {
     tsmux_put16 (&tmp, 0x4000 | pi->pid);
   } else
     tsmux_put16 (&tmp, pi->pid);
