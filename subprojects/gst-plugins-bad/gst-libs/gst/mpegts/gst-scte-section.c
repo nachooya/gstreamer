@@ -597,6 +597,58 @@ gst_mpegts_scte_splice_out_new (guint32 event_id, GstClockTime splice_time,
 }
 
 /**
+ * gst_mpegts_scte_splice_out_new:
+ * @event_id: The event ID.
+ * @splice_time: The running time for the splice event
+ * @duration: The optional duration.
+ *
+ * Allocates and initializes a new "Splice Out" INSERT command
+ * #GstMpegtsSCTESIT for the given @event_id, @splice_time and
+ * @duration.
+ *
+ * If the @splice_time is #G_MAXUINT64 then the event will be
+ * immediate as opposed to for the target @splice_time.
+ *
+ * If the @duration is 0 it won't be specified in the event.
+ *
+ * Returns: (transfer full): A newly allocated #GstMpegtsSCTESIT
+ */
+GST_MPEGTS_API
+GstMpegtsSCTESIT *gst_mpegts_scte_splice_out_new2 (guint32 event_id,
+    GstClockTime splice_time,
+    GstClockTime duration,
+    gboolean break_duration_auto_return,
+    guint8 avail_num,
+    guint8 avails_expected)
+{
+  GstMpegtsSCTESIT *sit = gst_mpegts_scte_sit_new ();
+  GstMpegtsSCTESpliceEvent *event = gst_mpegts_scte_splice_event_new ();
+
+  sit->splice_command_type = GST_MTS_SCTE_SPLICE_COMMAND_INSERT;
+  event->splice_event_id = event_id;
+  event->out_of_network_indicator = TRUE;
+  event->insert_event = TRUE;
+  if (splice_time == G_MAXUINT64) {
+    event->splice_immediate_flag = TRUE;
+  } else {
+    event->program_splice_time_specified = TRUE;
+    event->program_splice_time = splice_time;
+  }
+  if (duration != 0) {
+    event->duration_flag = TRUE;
+    event->break_duration = duration;
+  }
+  event->break_duration_auto_return = break_duration_auto_return;
+  event->avail_num = avail_num;
+  event->avails_expected = avails_expected;
+  g_ptr_array_add (sit->splices, event);
+
+  sit->is_running_time = TRUE;
+
+  return sit;
+}
+
+/**
  * gst_mpegts_scte_splice_event_new:
  *
  * Allocates and initializes a #GstMpegtsSCTESpliceEvent.
